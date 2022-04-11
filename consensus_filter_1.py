@@ -61,18 +61,29 @@ def getNetwork():
     #   Return the randomly generated connected network of nodes
     return network, avgPos
 
-def sensor_reading(network, name, avgPos):
-    return (np.linalg.norm(network[name]['pos'] - avgPos) ** 2 + NOISE) / (COMMUNICATION_RADIUS ** 2)
-
 network, avgPos = getNetwork()
+nodes_va = {name: 1 + NOISE * np.random.randn() for name in network}
+nodes_va_old = nodes_va
 
-# readings = {str(i): 0 for i in range(NUM_NODES)}
-# design_factor = 0.5
-# for i in range(1, 100):
-#     for name in network:
+def v_ik(network, name, avgPos):
+    return ((np.linalg.norm(network[name]['pos'] - avgPos) ** 2) + NOISE) / (COMMUNICATION_RADIUS ** 2)
 
-#         for nei in network[name]['nei']:
+weights = {str(i): {str(j): 0 for j in network} for i in network}
+design_factor = 0.5
+for i in range(100):
+    for name in network:
+        sigma_weight = 0
+        for nei in network[name]['nei']:
+            weights[name][nei] = design_factor / (v_ik(network, name, avgPos) + v_ik(network, nei, avgPos))
+            sigma_weight += weights[name][nei]
+        weights[name][name] = 1 - sigma_weight
 
+        addition = 0
+        for nei in network[name]['nei']:
+            addition += weights[name][nei] * nodes_va_old[nei]
+        nodes_va[name] = weights[name][name] * nodes_va_old[name] + addition
+    nodes_va_old = nodes_va
 
-#variance = (np.linalg.norm(network['pos'] - avgPos) ** 2 + NOISE) / (COMMUNICATION_RADIUS ** 2)
+print(nodes_va)
+print(nodes_va_old)
 
