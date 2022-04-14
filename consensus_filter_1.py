@@ -5,7 +5,8 @@ NUM_NODES = 10
 DIMENSION = 2
 MAX_DISTANCE = 4
 COMMUNICATION_RADIUS = 1.6
-NOISE = 0.01
+DELTA_T_UPDATE = 0.008
+c_v = 0.01
 
 def isConnected(network):
     def dfs(src, network, visited):
@@ -62,28 +63,22 @@ def getNetwork():
     return network, avgPos
 
 network, avgPos = getNetwork()
-nodes_va = {name: 1 + NOISE * np.random.randn() for name in network}
+nodes_va = 50 * np.ones((10,1)) + 1 * np.random.randn(10, 1)
 nodes_va_old = nodes_va
 
-def v_ik(network, name, avgPos):
-    return ((np.linalg.norm(network[name]['pos'] - avgPos) ** 2) + NOISE) / (COMMUNICATION_RADIUS ** 2)
-
 weights = {str(i): {str(j): 0 for j in network} for i in network}
-design_factor = 0.5
-for i in range(100):
+
+for i in range(1, 100):
     for name in network:
         sigma_weight = 0
         for nei in network[name]['nei']:
-            weights[name][nei] = design_factor / (v_ik(network, name, avgPos) + v_ik(network, nei, avgPos))
+            weights[name][nei] = 0
             sigma_weight += weights[name][nei]
-        weights[name][name] = 1 - sigma_weight
+        weights[name, name] = 1 - sigma_weight
 
         addition = 0
         for nei in network[name]['nei']:
-            addition += weights[name][nei] * nodes_va_old[nei]
-        nodes_va[name] = weights[name][name] * nodes_va_old[name] + addition
+            addition += weights[name][nei] * nodes_va_old[int(nei)]
+        
+        nodes_va[int(name)] = weights[name][name] * nodes_va_old[int(name)] + addition
     nodes_va_old = nodes_va
-
-print(nodes_va)
-print(nodes_va_old)
-
