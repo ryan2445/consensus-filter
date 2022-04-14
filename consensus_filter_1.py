@@ -1,14 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+ITERATIONS = 10
 NUM_NODES = 10
 DIMENSION = 2
 MAX_DISTANCE = 4
 COMMUNICATION_RADIUS = 1.6
-DELTA_T_UPDATE = 0.008
 c_v = 0.01
+c_lw = (2 * c_v) / (COMMUNICATION_RADIUS**2 * (NUM_NODES - 1))
+F1 = 50
 
 def isConnected(network):
+    #   DFS Helper Function
     def dfs(src, network, visited):
         visited[int(src)] = True
 
@@ -16,14 +19,18 @@ def isConnected(network):
             if visited[int(nei)] == False:
                 dfs(nei, network, visited)
 
+    #   Initialize DFS visited
     visited = [False] * NUM_NODES
 
+    #   Begin DFS
     dfs('0', network, visited)
 
+    #   If any node has not been visited, network is not connected
     for visit in visited:
         if not visit:
             return False
     
+    #   Network is conected because all nodes visited
     return True
 
 def getNetwork():
@@ -63,16 +70,28 @@ def getNetwork():
     return network, avgPos
 
 network, avgPos = getNetwork()
-nodes_va = 50 * np.ones((10,1)) + 1 * np.random.randn(10, 1)
+nodes_va = 50 * np.ones((NUM_NODES,1)) + 1 * np.random.randn(NUM_NODES, 1)
 nodes_va_old = nodes_va
+n1 = [0] * NUM_NODES
+m1 = [0] * NUM_NODES
+x
 
 weights = {str(i): {str(j): 0 for j in network} for i in network}
 
-for i in range(1, 100):
+def v_i(pos, node):
+    v1 = ((np.linalg.norm(pos - avgPos)**2) + c_v) / (COMMUNICATION_RADIUS**2)
+    
+    n1[node] = np.random.normal(0.0, v1)
+
+    m1[node] = F1 + n1[node]
+
+    return v1
+
+for i in range(1, ITERATIONS):
     for name in network:
         sigma_weight = 0
         for nei in network[name]['nei']:
-            weights[name][nei] = 0
+            weights[name][nei] = c_lw / (v_i(network[name]['pos'], int(name)) + v_i(network[nei]['pos'], int(name)))
             sigma_weight += weights[name][nei]
         weights[name, name] = 1 - sigma_weight
 
@@ -81,4 +100,7 @@ for i in range(1, 100):
             addition += weights[name][nei] * nodes_va_old[int(nei)]
         
         nodes_va[int(name)] = weights[name][name] * nodes_va_old[int(name)] + addition
+    
     nodes_va_old = nodes_va
+
+
