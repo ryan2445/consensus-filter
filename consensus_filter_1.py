@@ -78,16 +78,14 @@ x_i_old = copy.copy(x_i)
 
 weights = {str(i): {str(j): 0 for j in network} for i in network}
 
-def v_i(pos, node):
-    v1 = ((np.linalg.norm(pos - avgPos)**2) + c_v) / (COMMUNICATION_RADIUS**2)
-
-    return v1
+def v_i(pos):
+    return ((np.linalg.norm(pos - avgPos)**2) + c_v) / (COMMUNICATION_RADIUS**2)
 
 for i in range(1, ITERATIONS):
     for name in network:
         sigma_weight = 0
         for nei in network[name]['nei']:
-            weights[name][nei] = c_lw / (v_i(network[name]['pos'], int(name)) + v_i(network[nei]['pos'], int(name)))
+            weights[name][nei] = c_lw / (v_i(network[name]['pos']) + v_i(network[nei]['pos']))
             sigma_weight += weights[name][nei]
         weights[name][name] = 1 - sigma_weight
 
