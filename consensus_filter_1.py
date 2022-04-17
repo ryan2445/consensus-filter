@@ -7,7 +7,7 @@ ITERATIONS = 2000
 NUM_NODES = 10
 DIMENSION = 2
 MAX_DISTANCE = 4
-COMMUNICATION_RADIUS = 1.6
+COMMUNICATION_RADIUS = 2.5
 c_v = 0.01
 c_lw = (2 * c_v) / (COMMUNICATION_RADIUS**2 * (NUM_NODES - 1))
 F1 = 50
@@ -73,10 +73,10 @@ def getNetwork():
     return network, avgPos
 
 network, avgPos = getNetwork()
-x_i = F1 * np.ones((NUM_NODES,1)) + 1 * np.random.randn(NUM_NODES, 1)
+x_i = F1 * np.ones((NUM_NODES, 1)) + 1 * np.random.randn(NUM_NODES, 1)
 x_i_initial = copy.copy(x_i)
 x_i_old = copy.copy(x_i)
-
+convergence = {i: F1 * np.ones((ITERATIONS, 1)) for i in range(NUM_NODES)}
 weights = {str(i): {str(j): 0 for j in network} for i in network}
 
 def v_i(pos):
@@ -96,8 +96,9 @@ for i in range(1, ITERATIONS):
         
         x_i[int(name)] = weights[name][name] * x_i_old[int(name)] + addition
     
+    for j in range(len(x_i)):
+        convergence[j][i] -= x_i[j]
     x_i_old = copy.copy(x_i)
-
 
 #   Plot measurements
 measurement_x_initial = [i+1 for i in range(NUM_NODES)]
@@ -106,9 +107,16 @@ measurement_y_initial = x_i_initial
 measurement_x_final = [i+1 for i in range(NUM_NODES)]
 measurement_y_final = x_i
 
-plt.plot(measurement_x_initial, measurement_y_initial, label="IM")
-plt.plot(measurement_x_final, measurement_y_final, label="FM")
+plt.plot(measurement_x_initial, measurement_y_initial, label="Initial Measurement")
+plt.plot(measurement_x_final, measurement_y_final, label="Final Measurement")
 plt.xlabel("Node")
 plt.ylabel("Measurement Value")
 plt.savefig("measurements.png")
+plt.clf()
+
+convergence_x = [i for i in range(1, ITERATIONS)]
+convergence_x
+for i in range(NUM_NODES):
+    plt.plot(convergence_x, np.delete(convergence[i].flatten(), 0))
+plt.savefig("convergence.png")
 plt.clf()
