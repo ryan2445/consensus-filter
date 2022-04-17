@@ -1,15 +1,14 @@
 import copy
-from turtle import color
 import matplotlib.pyplot as plt
 import numpy as np
 
-ITERATIONS = 2000
+ITERATIONS = 25
 NUM_NODES = 10
 DIMENSION = 2
 MAX_DISTANCE = 4
 COMMUNICATION_RADIUS = 2.5
 c_v = 0.01
-c_lw = (2 * c_v) / (COMMUNICATION_RADIUS**2 * (NUM_NODES - 1))
+c_2w = (c_v / (COMMUNICATION_RADIUS**2)) / 2
 F1 = 50
 
 def isConnected(network):
@@ -50,7 +49,7 @@ def getNetwork():
             for index, node in enumerate(nodes):
                 name = str(index)
                 if curr_name != name:
-                    if np.linalg.norm(curr_node - node) <= 1.6:
+                    if np.linalg.norm(curr_node - node) <= COMMUNICATION_RADIUS:
                         network[curr_name]['nei'].append(name)
 
         connected = isConnected(network)
@@ -79,6 +78,9 @@ x_i_old = copy.copy(x_i)
 convergence = {i: F1 * np.ones((ITERATIONS, 1)) for i in range(NUM_NODES)}
 weights = {str(i): {str(j): 0 for j in network} for i in network}
 
+def c_1w(len_nei):
+    return (2 * c_v) / (COMMUNICATION_RADIUS**2 * len_nei)
+
 def v_i(pos):
     return ((np.linalg.norm(pos - avgPos)**2) + c_v) / (COMMUNICATION_RADIUS**2)
 
@@ -86,9 +88,20 @@ for i in range(1, ITERATIONS):
     for name in network:
         sigma_weight = 0
         for nei in network[name]['nei']:
-            weights[name][nei] = c_lw / (v_i(network[name]['pos']) + v_i(network[nei]['pos']))
+            # WEIGHT DESIGN 1
+            # weights[name][nei] = c_1w(len(network[name]['nei'])) / (v_i(network[name]['pos']) + v_i(network[nei]['pos']))
+            # WEIGHT DESIGN 2
+            # weights[name][nei] = (1 - weights[name][name]) / len(network[name]['nei'])
+            # MAX-DEGREE WEIGHTS
+            
             sigma_weight += weights[name][nei]
-        weights[name][name] = 1 - sigma_weight
+
+        # WEIGHT DESIGN 1
+        # weights[name][name] = 1 - sigma_weight
+        # WEIGHT DESIGN 2
+        # weights[name][name] = c_2w / v_i(network[name]['pos'])
+        # MAX-DEGREE WEIGHTS
+
 
         addition = 0
         for nei in network[name]['nei']:
@@ -98,15 +111,14 @@ for i in range(1, ITERATIONS):
     
     for j in range(len(x_i)):
         convergence[j][i] -= x_i[j]
+
     x_i_old = copy.copy(x_i)
 
 #   Plot measurements
 measurement_x_initial = [i+1 for i in range(NUM_NODES)]
 measurement_y_initial = x_i_initial
-
 measurement_x_final = [i+1 for i in range(NUM_NODES)]
 measurement_y_final = x_i
-
 plt.plot(measurement_x_initial, measurement_y_initial, label="Initial Measurement")
 plt.plot(measurement_x_final, measurement_y_final, label="Final Measurement")
 plt.xlabel("Node")
