@@ -1,4 +1,5 @@
 import copy
+from turtle import color
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -57,11 +58,11 @@ def getNetwork():
     #   Plot the network topology
     network_x = [network[node]['pos'][0] for node in network]
     network_y = [network[node]['pos'][1] for node in network]
-    plt.scatter(network_x, network_y)
+    plt.scatter(network_x, network_y, c="#1f77b4")
     for name in network:
         node = network[name]
         for nei in node['nei']:
-            plt.plot([node['pos'][0], network[nei]['pos'][0]], [node['pos'][1], network[nei]['pos'][1]])
+            plt.plot([node['pos'][0], network[nei]['pos'][0]], [node['pos'][1], network[nei]['pos'][1]], c="#1f77b4")
     plt.savefig('network.png')
     plt.clf()
 
@@ -105,8 +106,8 @@ measurement_y_initial = x_i_initial
 measurement_x_final = [i+1 for i in range(NUM_NODES)]
 measurement_y_final = x_i
 
-plt.plot(measurement_x_initial, measurement_y_initial, label="Initial Measurement")
-plt.plot(measurement_x_final, measurement_y_final, label="Final Measurement")
+plt.plot(measurement_x_initial, measurement_y_initial, label="IM")
+plt.plot(measurement_x_final, measurement_y_final, label="FM")
 plt.xlabel("Node")
 plt.ylabel("Measurement Value")
 plt.savefig("measurements.png")
