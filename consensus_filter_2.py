@@ -108,7 +108,7 @@ for x in range(25):
             x_i_old = copy.copy(x_i)
 
 #   Plot the measured scalar field
-plt.imshow(x_i, cmap='hot', interpolation='nearest')
+plt.imshow(x_i, cmap='hot', interpolation='nearest', origin='lower')
 plt.savefig("heatmap.png")
 plt.clf()
 
