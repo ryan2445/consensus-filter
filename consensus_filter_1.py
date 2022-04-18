@@ -2,7 +2,7 @@ import copy
 import matplotlib.pyplot as plt
 import numpy as np
 
-ITERATIONS = 25
+ITERATIONS = 1000
 NUM_NODES = 10
 DIMENSION = 2
 MAX_DISTANCE = 4
@@ -75,7 +75,7 @@ network, avgPos = getNetwork()
 x_i = F1 * np.ones((NUM_NODES, 1)) + 1 * np.random.randn(NUM_NODES, 1)
 x_i_initial = copy.copy(x_i)
 x_i_old = copy.copy(x_i)
-convergence = {i: F1 * np.ones((ITERATIONS, 1)) for i in range(NUM_NODES)}
+convergence = {i: np.average(x_i) * np.ones((ITERATIONS, 1)) for i in range(NUM_NODES)}
 weights = {str(i): {str(j): 0 for j in network} for i in network}
 
 def c_1w(len_nei):
@@ -89,19 +89,24 @@ for i in range(1, ITERATIONS):
         sigma_weight = 0
         for nei in network[name]['nei']:
             # WEIGHT DESIGN 1
-            # weights[name][nei] = c_1w(len(network[name]['nei'])) / (v_i(network[name]['pos']) + v_i(network[nei]['pos']))
+            weights[name][nei] = c_1w(len(network[name]['nei'])) / (v_i(network[name]['pos']) + v_i(network[nei]['pos']))
             # WEIGHT DESIGN 2
             # weights[name][nei] = (1 - weights[name][name]) / len(network[name]['nei'])
             # MAX-DEGREE WEIGHTS
-            
+            # weights[name][nei] = 1 / NUM_NODES
+            # METROPOLIS WEIGHTS
+            # weights[name][nei] = 1 / (1 + max(len(network[name]['nei']),  len(network[nei]['nei'])))
+
             sigma_weight += weights[name][nei]
 
         # WEIGHT DESIGN 1
-        # weights[name][name] = 1 - sigma_weight
+        weights[name][name] = 1 - sigma_weight
         # WEIGHT DESIGN 2
         # weights[name][name] = c_2w / v_i(network[name]['pos'])
         # MAX-DEGREE WEIGHTS
-
+        # weights[name][name] = 1 - (len(network[name]['nei']) / NUM_NODES)
+        # METROPOLIS WEIGHTS
+        # weights[name][name] = 1 - sigma_weight
 
         addition = 0
         for nei in network[name]['nei']:
