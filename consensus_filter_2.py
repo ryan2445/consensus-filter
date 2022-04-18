@@ -6,7 +6,7 @@ ITERATIONS = 25
 NUM_NODES = 30
 DIMENSION = 2
 MAX_DISTANCE = 25
-COMMUNICATION_RADIUS = 10
+COMMUNICATION_RADIUS = 5
 c_v = 0.01
 c_2w = (c_v / (COMMUNICATION_RADIUS**2)) / 2
 
@@ -107,5 +107,14 @@ for x in range(25):
 
             x_i_old = copy.copy(x_i)
 
+#   Plot the measured scalar field
 plt.imshow(x_i, cmap='hot', interpolation='nearest')
 plt.savefig("heatmap.png")
+plt.clf()
+
+diff = x_i - x_i_initial
+diff_x = [i+1 for i in range(625)]
+diff_y = diff.flatten()
+plt.plot(diff_x, diff_y)
+plt.savefig("heatmap_error.png")
+plt.clf()
